@@ -1,6 +1,7 @@
 document.addEventListener( "DOMContentLoaded", function() {
     const API_ROOT = "https://en.wikipedia.org/w/api.php",
-          API_SUFFIX = "&format=json&callback=?&continue=";
+          API_SUFFIX = "&format=json&callback=?&continue=",
+          SUB_CATS = "Category:Pending AfC submissions";
     const NOTES = {
         "nc": "copyvio",
         "nu": "unsourced",
@@ -39,27 +40,47 @@ document.addEventListener( "DOMContentLoaded", function() {
 
         loadJsonp( API_ROOT + "?action=query&prop=revisions&titles=Template:AFC_statistics&rvprop=content|timestamp" + API_SUFFIX )
             .then( function ( data ) {
+
+                // Sanity check on the query results
                 if ( !data.query || !data.query.pages ) {
                     document.getElementById( "error" ).innerHTML = "Error loading recent changes!";
                     return;
                 }
 
-                document.getElementById( "loading" ).innerHTML = "";
-
+                // Initial parsing of the query results
                 var pageId = Object.keys( data.query.pages );
                 var revision = data.query.pages[ pageId ].revisions[ 0 ];
+                var content = revision[ "*" ];
 
-                var result = "<th>Name</th><th>Notes</th>";
+                // Only parse the first section (the pending
+                // submissions)
+                content = content.substring(0, content.indexOf("AFC statistics/footer"));
+
+                // Each line of the wikitext contains one submissions'
+                // info
+                content = content.split( "\n" );
+
+                // Show metadata about how recent the data is
                 document.getElementById( "metadata" ).innerHTML =
                     "Results as of " + revision.timestamp + " (" +
                     timeSince( parseIsoDatetime( revision.timestamp ) ) +
                     " ago):";
-                var content = revision[ "*" ];
-                content = content.split( "\n" );
 
-                var result = "";
+                // Formatting function, used by the HTML-maker loop
+                var normalizeTitle = function( title ) { return title.replace( " ", "-" ); };
+
+                // Hide the "loading" image, because we're about to
+                // display the data
+                document.getElementById( "loading" ).innerHTML = "";
+
+                // This loop reads the API results (stored in the
+                // content[] array) and formats the list of
+                // submissions into a table.
                 var numEnabledFilters = enabledFilters.length;
-                var title, filtersHere;
+                var result = "<th>Name</th><th>Notes</th><th>Status</th>";
+                var allRevids = [];
+                var allTitles = [];
+                var title, filtersHere, revid;
                 for( var i = 0; i < content.length; i++ ) {
                     if( !content[ i ].startsWith( "{{#invoke" ) ) continue;
                     filtersHere = Object.keys( NOTES ).filter( function ( filter ) {
@@ -69,66 +90,48 @@ document.addEventListener( "DOMContentLoaded", function() {
                     if( enabledFiltersHere.length === numEnabledFilters ) {
                         result += "<tr>";
                         title = /\|t=(.+?)\|/.exec( content[ i ] )[1];
-                        result += "<td>" + wikilink(title) + "</td>";
+                        allTitles.push( title );
+                        result += "<td>" + wikilink( title ) + "</td>";
                         result += "<td>" + filtersHere.map( function ( f ) { return NOTES[ f ]; } ).join( ", " ) + "</td>";
+                        revid = /\|si=(.+?)\|/.exec( content[ i ])[1];
+                        result += "<td id='status-" + normalizeTitle( title ) + "'>Unknown</td>";
+                        allRevids.push( revid );
                         result += "</tr>";
                     }
                 }
 
                 document.getElementById( "result" ).innerHTML = result;
-                return;
 
-                // Get list of users
-                var users = uniq( data.query.recentchanges.map( function ( entry ) { return entry.user; } ) );
-
-                // Filter on blacklist
-                users = users.filter( function ( user ) {
-
-                    // Is user not on blacklist?
-                    return eval(atob("dXNlciAgICAgICAgICAhPT0gIkRlbHRhUXVhZCI="));
-                } );
-
-                var userInfoPromises = users.map( function ( user ) {
-                    return loadJsonp( API_ROOT + "?action=query&list=users&usprop=editcount|groups&ususers=" + encodeURIComponent( user ) + API_SUFFIX );
-                } ).map( function( promise ) {
-
-                    // If a call fails, we really don't care
-                    return new Promise( function ( resolve ) {
-                        promise
-                            .then( function ( x ) { resolve( x ); } )
-                            .catch( function ( x ) { resolve( null ); } );
-                    } );
-                } );
-                Promise.all( userInfoPromises ).then( function( results ) {
-                    var filteredUsers = [];
-                    var requiredGroup = document.querySelector( 'input[name="filter"]:checked' ).value;
-                    results.forEach( function ( result ) {
-                        if( result === null ) return;
-                        var user = result.query.users[0],
-                            highEditCount = user.editcount > EDIT_COUNT_THRESHOLD,
-                            notBot = user.groups.indexOf( "bot" ) === -1,
-                            hasGroup = user.groups.indexOf( requiredGroup ) !== -1;
-                        if ( highEditCount && notBot && hasGroup ) {
-                            filteredUsers.push( result.query.users[0].name );
-                        }
-                    } );
-
-                    if(filteredUsers.length) {
-                        var newRow = document.createElement( "tr" );
-                        newRow.innerHTML = "<th>User</th>";
-                        table.appendChild( newRow );
-                        filteredUsers.forEach( function ( user ) {
-                            newRow = document.createElement( "tr" );
-                            newRow.innerHTML = makeUserCell( user );
-                            table.appendChild( newRow );
+                // We want the pending/reviewed status of each
+                // submission, so we divide the submissions into blocks
+                // of 50, then fetch their categories (w/ an intelligent
+                // use of clcategories so we don't fetch extra ones),
+                // then display them using the submission-specific
+                // element ids that we already put in the table cells
+                var revidQueryParam, page, ourTitles;
+                for( i = 0; i < allRevids.length; i += 50 ) {
+                    revidQueryParam = allRevids.slice( i, i + 50 ).map( fixedEncodeURIComponent ).join( "|" );
+                    ( function ( ourTitles ) {
+                        loadJsonp( API_ROOT + "?action=query&revids=" +
+                                revidQueryParam + "&prop=categories&clcategories="+
+                                SUB_CATS + API_SUFFIX ).then( function ( data ) {
+                            if ( !data.query || !data.query.pages ) {
+                                return;
+                            }
+                            for( var pageid in data.query.pages ) {
+                                page = data.query.pages[ pageid ];
+                                var pending = page.hasOwnProperty( "categories" );
+                                var elId = "status-" + normalizeTitle( page.title );
+                                var el = document.getElementById( elId );
+                                if( el ) {
+                                    ourTitles.splice( ourTitles.indexOf( page.title ), 1);
+                                    el.innerHTML = pending ? "Pending" : "Reviewed";
+                                    el.className += pending ? "pending" : "";
+                                }
+                            }
                         } );
-                    } else {
-                        document.getElementById( "error" ).innerHTML = "No user in the <tt>" + requiredGroup + "</tt> group has edited very recently.";
-                    }
-                    for(var i = 0; i < filterRadioBtns.length; i++) {
-                        filterRadioBtns[i].disabled = "";
-                    }
-                } );
+                    } )( allTitles.slice( i, i + 50 ) );
+                }
             } ); // end loadJsonp
     }
 
@@ -138,13 +141,6 @@ document.addEventListener( "DOMContentLoaded", function() {
     var filterRadioBtns = document.getElementsByName( "filter" );
     for(var i = 0; i < filterRadioBtns.length; i++) {
         filterRadioBtns[i].addEventListener( 'click', load );
-    }
-
-    /**
-     * Makes a <td> with all sorts of fun links.
-     */
-    function makeUserCell ( username ) {
-        return "<td><a href='https://en.wikipedia.org/wiki/User:" + username + "' title='Wikipedia user page of " + username + "'>" + username + "</a> (<a href='https://en.wikipedia.org/wiki/User talk:" + username + "' title='Wikipedia user talk page of " + username + "'>talk</a> &middot; <a href='https://en.wikipedia.org/wiki/Special:Contributions/" + username + "' title='Wikipedia contributions of " + username + "'>contribs</a>)</td>";
     }
 
     // Utility functions
@@ -170,22 +166,6 @@ document.addEventListener( "DOMContentLoaded", function() {
             };
             document.getElementsByTagName('head')[0].appendChild(script);
         } );
-    }
-
-    // From http://stackoverflow.com/a/9229821/1757964
-    function uniq(a) {
-        var seen = {};
-        var out = [];
-        var len = a.length;
-        var j = 0;
-        for(var i = 0; i < len; i++) {
-            var item = a[i];
-            if(seen[item] !== 1) {
-                seen[item] = 1;
-                out[j++] = item;
-            }
-        }
-        return out;
     }
 
     // From https://stackoverflow.com/a/26434619/1757964
@@ -215,6 +195,13 @@ document.addEventListener( "DOMContentLoaded", function() {
 
     // Makes a wikilink
     function wikilink(title) {
-        return "<a href='https://en.wikipedia.org/wiki/" + title + "'>" + title + "</a>";
+        return "<a href='https://en.wikipedia.org/wiki/" + fixedEncodeURIComponent( title ) + "'>" + title + "</a>";
+    }
+
+    // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+    function fixedEncodeURIComponent(str) {
+        return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+            return '%' + c.charCodeAt(0).toString(16);
+        } );
     }
 } );

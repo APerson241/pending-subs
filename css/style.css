@@ -47,6 +47,10 @@ td, th {
     border: thin solid black;
 }
 
+td.pending {
+    background-color: #F3EBA3;
+}
+
 #loading {
     text-align: center;
     font-size: 130%;
