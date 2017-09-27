@@ -83,6 +83,7 @@ document.addEventListener( "DOMContentLoaded", function() {
     }
 
     loadPending();
+    updateFiltered();
 
     var filterRadioBtns = document.getElementsByName( "filter" );
     for(var i = 0; i < filterRadioBtns.length; i++) {
