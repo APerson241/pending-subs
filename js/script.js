@@ -8,11 +8,6 @@ document.addEventListener( "DOMContentLoaded", function() {
     // State variable for JSONP calls
     var jsonpUnique = 0;
 
-    // Load checkboxes
-    for( var i = 0; i < NOTES.length; i++ ) {
-        document.getElementById( "filter" ).innerHTML += "<input type='checkbox' name='filter' value='" + NOTES[i] + "' id='filter-" + NOTES[i] + "' /><label for='filter-" + NOTES[i] + "'>" + NOTES[i] + "</label>";
-    }
-
     // Based on checkboxes, updates visibility
     function updateFiltered() {
         // Get which checkboxes are checked

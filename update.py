@@ -10,6 +10,8 @@ TEMPLATE = "template.html"
 DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
         "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td id='status-{3}'>Unknown</td></tr>"
+POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit")
+FILTER_FORMAT = "<input id='filter-{0}' name='filter' value='{0}' type='checkbox' /><label for='filter-{0}'>{0}</label>"
 
 def print_log(what_to_print):
     print(datetime.datetime.utcnow().strftime("[%Y-%m-%dT%H:%M:%SZ] ") + what_to_print)
@@ -32,6 +34,9 @@ def get_notes(content):
     if len(content) < 1000:
 	notes.append("short") # Submission is short
 
+    if re.search(r"\{\{AfC submission\|d\|", content, re.I):
+        notes.append("resubmit") # Submission was declined in the past
+
     return notes
 
 def main():
@@ -52,11 +57,12 @@ def main():
         with open(OUTPUT_FILE, "w") as output_file:
             template = Template("\n".join(template_file.readlines()))
             asof = datetime.datetime.utcnow().strftime("Generated at %H:%M, %d %B %Y (UTC).")
+            filters = "\n".join(FILTER_FORMAT.format(note) for note in POSSIBLE_NOTES)
             html_id = lambda title: title.replace(" ", "-").replace("'", "-").replace("+", "-")
             subs = "\n".join(ROW_FORMAT.format(title.replace("'", "%27"),
                     title, ", ".join(notes), html_id(title))
                     for title, notes in titles)
-            output_file.write(template.substitute({"asof": asof, "subs": subs}))
+            output_file.write(template.substitute({"asof": asof, "filters": filters, "subs": subs}))
 
 if __name__ == "__main__":
     main()
