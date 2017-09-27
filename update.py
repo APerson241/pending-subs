@@ -49,7 +49,8 @@ def main():
     titles = [] # (title, notes) e.g. ("Draft:Foo", ["copyvio"])
     for each_article in cat_pend.articles(content=True):
         each_title = each_article.title(withNamespace=True).encode("utf-8")
-        if each_title not in DISALLOWED_TITLES:
+        if (each_title not in DISALLOWED_TITLES and
+                not each_article.isRedirectPage()):
             titles.append((each_title, get_notes(each_article.get())))
 
     # Write titles into template
