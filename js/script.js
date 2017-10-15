@@ -3,7 +3,7 @@ document.addEventListener( "DOMContentLoaded", function() {
           API_SUFFIX = "&format=json&callback=?&continue=",
           SUB_CATS = "Category:Pending AfC submissions",
           STEP_LENGTH = 10;
-    const NOTES = ["copyvio", "no-inline", "unsourced", "short"];
+    const NOTES = ["copyvio", "no-inline", "unsourced", "short", "veryold"];
 
     // State variable for JSONP calls
     var jsonpUnique = 0;

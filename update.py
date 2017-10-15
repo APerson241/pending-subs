@@ -10,14 +10,15 @@ TEMPLATE = "template.html"
 DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
         "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td id='status-{3}'>Unknown</td></tr>"
-POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit")
+POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold")
 FILTER_FORMAT = "<input id='filter-{0}' name='filter' value='{0}' type='checkbox' /><label for='filter-{0}'>{0}</label>"
 
 def print_log(what_to_print):
     print(datetime.datetime.utcnow().strftime("[%Y-%m-%dT%H:%M:%SZ] ") + what_to_print)
 
-def get_notes(content):
+def get_notes(page_obj):
     """Adapted from https://github.com/earwig/earwigbot-plugins/blob/develop/tasks/afc_statistics.py#L694-L744"""
+    content = page_obj.get()
     notes = []
     regex = r"\{\{s*AfC suspected copyvio"
     if re.search(regex, content):
@@ -37,6 +38,9 @@ def get_notes(content):
     if re.search(r"\{\{AfC submission\|d\|", content, re.I):
         notes.append("resubmit") # Submission was declined in the past
 
+    if any(each_cat.title(withNamespace=False).endswith("Very old") for each_cat in page_obj.categories()):
+        notes.append("veryold") # Submission is very old
+
     return notes
 
 def main():
@@ -50,7 +54,7 @@ def main():
     for each_article in cat_pend.articles(content=True):
         each_title = each_article.title(withNamespace=True).encode("utf-8")
         if each_title not in DISALLOWED_TITLES:
-            titles.append((each_title, get_notes(each_article.get())))
+            titles.append((each_title, get_notes(each_article)))
 
     # Write titles into template
     with open(TEMPLATE) as template_file:
