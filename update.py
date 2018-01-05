@@ -10,7 +10,7 @@ TEMPLATE = "template.html"
 DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
         "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td id='status-{3}'>Unknown</td></tr>"
-POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold")
+POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace")
 FILTER_FORMAT = "<input id='filter-{0}' name='filter' value='{0}' type='checkbox' /><label for='filter-{0}'>{0}</label>"
 
 def print_log(what_to_print):
@@ -40,6 +40,9 @@ def get_notes(page_obj):
 
     if any(each_cat.title(withNamespace=False).endswith("Very old") for each_cat in page_obj.categories()):
         notes.append("veryold") # Submission is very old
+
+    if page_obj.title().startswith("User:"):
+        notes.append("userspace") # Submission is in userspace
 
     return notes
 
