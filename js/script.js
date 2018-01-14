@@ -8,7 +8,7 @@ document.addEventListener( "DOMContentLoaded", function() {
     // State variable for JSONP calls
     var jsonpUnique = 0;
 
-    // Based on checkboxes, updates visibility
+    // Based on checkboxes and project filter, updates visibility
     function updateFiltered() {
         // Get which checkboxes are checked
         var enabledFiltersElements = document.querySelectorAll('input[name=filter]:checked');
@@ -16,14 +16,20 @@ document.addEventListener( "DOMContentLoaded", function() {
         for(var i = 0; i < enabledFiltersElements.length; i++ ) {
             enabledFilters.push( enabledFiltersElements[ i ].value );
         }
-        console.log(enabledFilters)
+
+        // And which projects are required
+        var projs = multipleCancelButton.getValue( /* valueOnly */ true );
 
         var rows = document.querySelectorAll( "#result tr" );
-        var notes, passesFilter;
+        var notes, currProjs, passesFilter;
         for( i = 1; i < rows.length; i++ ) {
             notes = rows[i].children[1].innerHTML;
             passesFilter = enabledFilters.every( function ( filter ) {
                 return notes.indexOf( filter ) >= 0;
+            } );
+            currProjs = rows[i].children[2].getAttribute( "value" );
+            passesFilter &= projs.every( function ( eachProj ) {
+                return currProjs.indexOf( eachProj ) >= 0;
             } );
             rows[i].style.display = passesFilter ? "" : "none";
         }
@@ -82,6 +88,11 @@ document.addEventListener( "DOMContentLoaded", function() {
         }
     }
 
+    // Initialize wikiproject filter
+    var multipleCancelButton = new Choices( '#proj-positive-filter', {
+        removeItemButton: true,
+    } );
+
     loadPending();
     updateFiltered();
 
@@ -89,6 +100,11 @@ document.addEventListener( "DOMContentLoaded", function() {
     for(var i = 0; i < filterRadioBtns.length; i++) {
         filterRadioBtns[i].addEventListener( 'click', updateFiltered );
     }
+
+    multipleCancelButton.passedElement.addEventListener( "change", function ( value ) {
+        console.log( multipleCancelButton.getValue( /* valueOnly */ true ) );
+        updateFiltered();
+    } );
 
     // Utility functions
     // -------------------------------------------

@@ -37,6 +37,14 @@ a:hover {
     text-decoration: underline;
 }
 
+abbr[title] {
+    cursor: help;
+}
+
+abbr.wikiproject {
+    font-size: 90%;
+}
+
 table {
     border-collapse: collapse;
     background-color: white;
@@ -73,6 +81,10 @@ input[type=radio] {
 
 #error:empty {
     display: none;
+}
+
+#checkbox-filters {
+    margin-bottom: 0.75em;
 }
 
 #metadata {

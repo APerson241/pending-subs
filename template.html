@@ -4,7 +4,9 @@
     <meta charset="utf-8" />
     <title>Pending AfC Submissions</title>
     <link rel="alternate" type="application/x-wiki" title="Edit this file on GitHub!" href="https://github.com/APerson241/pending-subs/edit/master/index.html" />
+    <link href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/choices.js/3.0.3/styles/css/choices.css" rel="stylesheet" />
     <link href="css/style.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/choices.js/3.0.3/choices.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
   </head>
   <body>
@@ -13,9 +15,13 @@
     <p>
     This tool displays AfC submissions in a convenient way. Filter the submissions by clicking the checkboxes.
     </p>
-    <div id="filter">$filters</div>
-    <div id="metadata">$asof</div>
-    <table id="result"><tr><th>Name</th><th>Notes</th><th>Status</th></tr>$subs</table>
+    <div id="checkbox-filters">$filters</div>
+    <label for="proj-positive-filter">Limit to only drafts with these WikiProjects:</label>
+    <select class="form-control" name="proj-positive-filter" id="proj-positive-filter" placeholder="Select WikiProjects!" multiple>
+      $projs
+    </select>
+    <div id="metadata">$metadata</div>
+    <table id="result"><tr><th>Name</th><th>Notes</th><th>Projects</th><th>Status</th></tr>$subs</table>
     <div id="error"></div>
     <footer>
       <a href="https://en.wikipedia.org/wiki/User:Enterprisey" title="Enterprisey's user page on the English Wikipedia">Enterprisey</a> (<a href="https://en.wikipedia.org/wiki/User_talk:Enterprisey" title="Enterprisey's talk page on the English Wikipedia">talk!</a>) &middot; <a href="https://github.com/APerson241/pending-subs" title="Source code on GitHub">Source code</a> &middot; <a href="https://github.com/APerson241/pending-subs/issues" title="Issues on GitHub">Issues</a>
