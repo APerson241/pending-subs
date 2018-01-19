@@ -113,7 +113,7 @@ def get_projects(page_obj):
         if wprojs:
             project_strings.append(", ".join(map(wproj_to_html, wprojs)))
             project_abbrevs.extend(wprojs)
-    return [",".join(project_abbrevs), ", ".join(project_strings)]
+    return (project_abbrevs, ", ".join(project_strings))
 
 def get_notes(page_obj):
     """Adapted from https://github.com/earwig/earwigbot-plugins/blob/develop/tasks/afc_statistics.py#L694-L744"""
@@ -158,11 +158,25 @@ def main():
     cat_pend = pywikibot.Category(wiki, CAT_PEND)
     titles = [] # (title, notes) e.g. ("Draft:Foo", ["copyvio"])
     i = 0
+
+    # Stores shortcuts that have at least one draft. These are the only
+    # shortcuts we show in the dropdown filter.
+    shortcuts_with_drafts = set()
+
     for each_article in cat_pend.articles(content=True, total=None): # TODO remove total=5
         each_title = each_article.title(withNamespace=True).encode("utf-8")
         if (each_title not in DISALLOWED_TITLES and
                 not each_article.isRedirectPage()):
-            titles.append(tuple([each_title, get_notes(each_article)] + get_projects(each_article)))
+            notes = get_notes(each_article)
+            proj_shortcuts, proj_html = get_projects(each_article)
+
+            # Update the list of shortcuts we've seen
+            shortcuts_with_drafts.update(proj_shortcuts)
+
+            # We receive proj_shortcuts in list form, so make it a string
+            proj_shortcuts = ",".join(proj_shortcuts)
+
+            titles.append((each_title, notes, proj_shortcuts, proj_html))
         i += 1
         if i % 100 == 0:
             print_log("{} drafts processed...".format(i))
@@ -172,15 +186,20 @@ def main():
         with open(OUTPUT_FILE, "w") as output_file:
             template = Template("\n".join(template_file.readlines()))
             metadata = datetime.datetime.utcnow().strftime("Generated at %H:%M, %d %B %Y (UTC).")
-            metadata += " There are {} submissions.".format(len(titles))
             filters = "\n".join(FILTER_FORMAT.format(note) for note in POSSIBLE_NOTES)
             html_id = lambda title: title.replace(" ", "-").replace("'", "-").replace("+", "-")
             subs = "\n".join(ROW_FORMAT.format(title.replace("'", "%27"),
                     title, ", ".join(notes), project_shortcuts, projects, html_id(title))
                     for title, notes, project_shortcuts, projects in titles)
-            projs = "\n".join(PROJ_OPTION_FORMAT.format(shortcut, name)
-                    for shortcut, name in wproj_shortcut_to_name.items())
-            output_file.write(template.substitute({"metadata": metadata, "filters": filters, "subs": subs, "projs": projs}))
+            projs = "\n".join(PROJ_OPTION_FORMAT.format(shortcut, wproj_shortcut_to_name[shortcut])
+                    for shortcut in shortcuts_with_drafts)
+            output_file.write(template.substitute({
+                "metadata": metadata,
+                "filters": filters,
+                "subs": subs,
+                "projs": projs,
+                "draftcount": str(len(titles))
+                }))
 
 if __name__ == "__main__":
     #import doctest

@@ -33,6 +33,22 @@ document.addEventListener( "DOMContentLoaded", function() {
             } );
             rows[i].style.display = passesFilter ? "" : "none";
         }
+
+        // Update filtering statistics
+        // The -1 is for the row with the headers
+        var numShownDrafts = document.querySelectorAll( 'tr:not([style*="display: none"])' ).length - 1;
+        var filterStats = "There are " + window.pendingSubsDraftCount + " submissions";
+        if( numShownDrafts === window.pendingSubsDraftCount ) {
+            filterStats += ".";
+        } else {
+            if( numShownDrafts === 0 ) {
+                filterStats += "; the selected filters don't match any of them.";
+            } else {
+                filterStats += "; " + numShownDrafts + " match" + ( numShownDrafts === 1 ? "es" : "" ) + " the selected filters.";
+            }
+        }
+
+        document.getElementById( "filter-stats" ).textContent = filterStats;
     }
 
     // Loads "Pending" or "Reviewed" status
