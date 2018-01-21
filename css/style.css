@@ -24,6 +24,25 @@ button, input[type=submit] {
     font-family: Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif;
 }
 
+/* The following hacks taken from https://stackoverflow.com/a/306593/1757964 */
+#checkbox-filters label {
+    display: inline-block;
+    padding-left: 15px;
+    text-indent: -15px;
+    margin-right: 0.5em;
+}
+
+#checkbox-filters input {
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin:0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
+    *overflow: hidden;
+}
+
 footer {
     margin-top: 1em;
     font-size: smaller;

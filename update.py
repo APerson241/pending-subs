@@ -12,15 +12,21 @@ DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
         "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td value='{3}'>{4}</td><td id='status-{5}'>Unknown</td></tr>"
 POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace")
-FILTER_FORMAT = "<input id='filter-{0}' name='filter' value='{0}' type='checkbox' /><label for='filter-{0}'>{0}</label>"
+NOTE_MEANINGS = {
+        "copyvio": "Submission is a suspected copyvio",
+        "no-inline": "Submission lacks inline citations",
+        "unsourced": "Submission lacks references completely",
+        "short": "Submission is very short (less than 1 kilobyte)",
+        "resubmit": "Submission was already declined",
+        "veryold": "Submission is over 21 days old",
+        "userspace": "Submission is in userspace"
+        }
+FILTER_FORMAT = "<label><input name='filter' value='{0}' type='checkbox' /> <abbr title='{1}'>{0}</abbr></label>"
 PROJ_FORMAT = "<abbr class='wikiproject' title='{0}'>{1}</abbr>"
 PROJ_OPTION_FORMAT = "<option value='{0}'>{0} - {1}</option>"
 
 IBX_MAP_PAGE_TITLE = "User:Enterprisey/ibx-wproj-map.js"
 REQD_EDITOR = "Enterprisey" # must be the last editor of IBX_MAP_PAGE_TITLE
-
-# Global variable; the Pywikibot Site object
-wiki = None
 
 # Global variable; holds lookup table from infobox names to lists of wikiproject shortcuts
 ibx_wproj_map = {}
@@ -85,7 +91,6 @@ def get_projects(page_obj):
     >>> get_projects("{{Infobox software")
     '<abbr title="WikiProject Computing">COMP</abbr>'
     """
-    global wiki
     global ibx_wproj_map
     project_strings = []
     project_abbrevs = []
@@ -186,7 +191,7 @@ def main():
         with open(OUTPUT_FILE, "w") as output_file:
             template = Template("\n".join(template_file.readlines()))
             metadata = datetime.datetime.utcnow().strftime("Generated at %H:%M, %d %B %Y (UTC).")
-            filters = "\n".join(FILTER_FORMAT.format(note) for note in POSSIBLE_NOTES)
+            filters = "\n".join(FILTER_FORMAT.format(note, meaning) for note, meaning in NOTE_MEANINGS.items())
             html_id = lambda title: title.replace(" ", "-").replace("'", "-").replace("+", "-")
             subs = "\n".join(ROW_FORMAT.format(title.replace("'", "%27"),
                     title, ", ".join(notes), project_shortcuts, projects, html_id(title))
