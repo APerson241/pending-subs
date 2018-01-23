@@ -1,9 +1,0 @@
-{
-    "name" : "pending-subs",
-    "title" : "Pending AfC Subs",
-    "description" : "Filter AfC submissions by certain criteria.",
-    "url" : "http://tools.wmflabs.org/apersonbot/pending-subs/",
-    "keywords" : "tools",
-    "author" : "Enterprisey",
-    "repository" : "https://github.com/APerson241/pending-sub.git"
-}
