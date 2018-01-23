@@ -1,13 +1,15 @@
 import datetime
 from string import Template
+import os
 import re
 import sys
 
 import pywikibot
 
 CAT_PEND = "Category:Pending AfC submissions"
-OUTPUT_FILE = "index.html"
-TEMPLATE = "template.html"
+DATA_DIR = "/data/project/apersonbot/public_html/pending-subs"
+OUTPUT_FILE = os.path.join(DATA_DIR, "index.html")
+TEMPLATE = os.path.join(DATA_DIR, "template.html")
 DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
         "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td value='{3}'>{4}</td><td id='status-{5}'>Unknown</td></tr>"
