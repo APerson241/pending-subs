@@ -26,6 +26,7 @@ NOTE_MEANINGS = {
 FILTER_FORMAT = "<label><input name='filter' value='{0}' type='checkbox' /> <abbr title='{1}'>{0}</abbr></label>"
 PROJ_FORMAT = "<abbr class='wikiproject' title='{0}'>{1}</abbr>"
 PROJ_OPTION_FORMAT = "<option value='{0}'>{0} - {1}</option>"
+OLD_SUB_CATS = ["Category:AfC pending submissions by age/" + x for x in ["7 weeks ago", "8 weeks ago", "Very old"]]
 
 IBX_MAP_PAGE_TITLE = "User:Enterprisey/ibx-wproj-map.js"
 REQD_EDITOR = "Enterprisey" # must be the last editor of IBX_MAP_PAGE_TITLE
@@ -144,7 +145,7 @@ def get_notes(page_obj):
     if re.search(r"\{\{AfC submission\|d\|", content, re.I):
         notes.append("resubmit") # Submission was declined in the past
 
-    if any(each_cat.title(withNamespace=False).endswith("Very old") for each_cat in page_obj.categories()):
+    if any(each_cat.title(withNamespace=False) in OLD_SUB_CATS for each_cat in page_obj.categories()):
         notes.append("veryold") # Submission is very old
 
     if page_obj.title().startswith("User:"):
