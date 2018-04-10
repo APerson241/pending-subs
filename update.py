@@ -20,7 +20,7 @@ NOTE_MEANINGS = {
         "unsourced": "Submission lacks references completely",
         "short": "Submission is very short (less than 1 kilobyte)",
         "resubmit": "Submission was already declined",
-        "veryold": "Submission is over 21 days old",
+        "veryold": "Submission is over six weeks old",
         "userspace": "Submission is in userspace"
         }
 FILTER_FORMAT = "<label><input name='filter' value='{0}' type='checkbox' /> <abbr title='{1}'>{0}</abbr></label>"
