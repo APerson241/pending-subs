@@ -10,8 +10,8 @@ CAT_PEND = "Category:Pending AfC submissions"
 DATA_DIR = "/data/project/apersonbot/public_html/pending-subs"
 OUTPUT_FILE = os.path.join(DATA_DIR, "index.html")
 TEMPLATE = os.path.join(DATA_DIR, "template.html")
-DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects",
-        "Wikipedia:Files for upload")
+DISALLOWED_TITLES = (b"Wikipedia:Articles for creation/Redirects and categories",
+        b"Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td value='{3}'>{4}</td><td id='status-{5}'>Unknown</td></tr>"
 POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace")
 NOTE_MEANINGS = {
@@ -184,7 +184,7 @@ def main():
             # We receive proj_shortcuts in list form, so make it a string
             proj_shortcuts = ",".join(proj_shortcuts)
 
-            titles.append((each_title, notes, proj_shortcuts, proj_html))
+            titles.append((each_title.decode("utf-8"), notes, proj_shortcuts, proj_html))
         i += 1
         if i % 100 == 0:
             print_log("{} drafts processed...".format(i))
