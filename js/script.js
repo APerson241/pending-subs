@@ -3,7 +3,7 @@ document.addEventListener( "DOMContentLoaded", function() {
           API_SUFFIX = "&format=json&callback=?&continue=",
           SUB_CATS = "Category:Pending AfC submissions",
           STEP_LENGTH = 10;
-    const NOTES = ["copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace"];
+    const NOTES = ["copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace", "no-projs"];
 
     // State variable for JSONP calls
     var jsonpUnique = 0;
@@ -14,11 +14,14 @@ document.addEventListener( "DOMContentLoaded", function() {
         var enabledFiltersElements = document.querySelectorAll('input[name=filter]:checked');
         var enabledFilters = [];
         for(var i = 0; i < enabledFiltersElements.length; i++ ) {
+            if( enabledFiltersElements[ i ].value === "no-projs" ) continue;
             enabledFilters.push( enabledFiltersElements[ i ].value );
         }
 
         // And which projects are required
         var projs = multipleCancelButton.getValue( /* valueOnly */ true );
+
+        var isNoProjsFilterOn = document.querySelector( "input[value='no-projs']" ).checked;
 
         var rows = document.querySelectorAll( "#result tr" );
         var notes, currProjs, passesFilter;
@@ -28,6 +31,7 @@ document.addEventListener( "DOMContentLoaded", function() {
                 return notes.indexOf( filter ) >= 0;
             } );
             currProjs = rows[i].children[2].getAttribute( "value" );
+            passesFilter &= !isNoProjsFilterOn || !currProjs;
             passesFilter &= projs.every( function ( eachProj ) {
                 return currProjs.indexOf( eachProj ) >= 0;
             } );

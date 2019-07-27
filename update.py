@@ -13,7 +13,7 @@ TEMPLATE = os.path.join(DATA_DIR, "template.html")
 DISALLOWED_TITLES = (b"Wikipedia:Articles for creation/Redirects and categories",
         b"Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td value='{3}'>{4}</td><td id='status-{5}'>Unknown</td></tr>"
-POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace")
+POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace", "no-projs")
 NOTE_MEANINGS = {
         "copyvio": "Submission is a suspected copyvio",
         "no-inline": "Submission lacks inline citations",
@@ -21,7 +21,8 @@ NOTE_MEANINGS = {
         "short": "Submission is very short (less than 1 kilobyte)",
         "resubmit": "Submission was already declined",
         "veryold": "Submission is over six weeks old",
-        "userspace": "Submission is in userspace"
+        "userspace": "Submission is in userspace",
+        "no-projs": "Submission has no associated projects",
         }
 FILTER_FORMAT = "<label><input name='filter' value='{0}' type='checkbox' /> <abbr title='{1}'>{0}</abbr></label>"
 PROJ_FORMAT = "<abbr class='wikiproject' title='{0}'>{1}</abbr>"
