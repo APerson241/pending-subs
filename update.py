@@ -129,18 +129,18 @@ def get_notes(page_obj):
     notes = []
     regex = r"\{\{s*AfC suspected copyvio"
     if re.search(regex, content):
-	notes.append("copyvio")  # Submission is a suspected copyvio
+        notes.append("copyvio")  # Submission is a suspected copyvio
 
     if not re.search(r"\<ref\s*(.*?)\>(.*?)\</ref\>", content, re.I|re.S):
-	regex = r"(https?:)|\[//(?!{0})([^ \]\t\n\r\f\v]+?)"
-	sitedomain = re.escape("en.wikipedia.org")
-	if re.search(regex.format(sitedomain), content, re.I | re.S):
-	    notes.append("no-inline")  # Submission has no inline citations
-	else:
-	    notes.append("unsourced")  # Submission is completely unsourced
+        regex = r"(https?:)|\[//(?!{0})([^ \]\t\n\r\f\v]+?)"
+        sitedomain = re.escape("en.wikipedia.org")
+        if re.search(regex.format(sitedomain), content, re.I | re.S):
+            notes.append("no-inline")  # Submission has no inline citations
+        else:
+            notes.append("unsourced")  # Submission is completely unsourced
 
     if len(content) < 1000:
-	notes.append("short") # Submission is short
+        notes.append("short") # Submission is short
 
     if re.search(r"\{\{AfC submission\|d\|", content, re.I):
         notes.append("resubmit") # Submission was declined in the past
