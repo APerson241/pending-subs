@@ -60,7 +60,7 @@ def make_project_tables(ibx_map_page):
         if not each_line or each_line.startswith("//"):
             continue
         tokens = each_line.split("|")
-        tokens = map(lambda s: s.strip(), tokens)
+        tokens = list(map(lambda s: s.strip(), tokens))
         ibx_wproj_map[tokens[0].lower()] = tokens[1:]
 
     # Build the other two
@@ -68,7 +68,7 @@ def make_project_tables(ibx_map_page):
         if not each_line or each_line.startswith("//"):
             continue
         tokens = each_line.split("|")
-        tokens = map(lambda s: s.strip(), tokens)
+        tokens = list(map(lambda s: s.strip(), tokens))
         wproj_name_to_shortcut[tokens[0].lower()] = (tokens[0], tokens[1])
         wproj_shortcut_to_name[tokens[1]] = tokens[0]
     print_log("Generated lookup table.")
