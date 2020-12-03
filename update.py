@@ -10,8 +10,8 @@ CAT_PEND = "Category:Pending AfC submissions"
 DATA_DIR = "/data/project/apersonbot/public_html/pending-subs"
 OUTPUT_FILE = os.path.join(DATA_DIR, "index.html")
 TEMPLATE = os.path.join(DATA_DIR, "template.html")
-DISALLOWED_TITLES = (b"Wikipedia:Articles for creation/Redirects and categories",
-        b"Wikipedia:Files for upload")
+DISALLOWED_TITLES = ("Wikipedia:Articles for creation/Redirects and categories",
+        "Wikipedia:Files for upload")
 ROW_FORMAT = "<tr><td><a href='https://en.wikipedia.org/wiki/{0}'>{1}</a></td><td>{2}</td><td value='{3}'>{4}</td><td id='status-{5}'>Unknown</td></tr>"
 POSSIBLE_NOTES = ("copyvio", "no-inline", "unsourced", "short", "resubmit", "veryold", "userspace", "no-projs")
 NOTE_MEANINGS = {
@@ -173,7 +173,7 @@ def main():
     shortcuts_with_drafts = set()
 
     for each_article in cat_pend.articles(content=True, total=None): # TODO remove total=5
-        each_title = each_article.title(withNamespace=True).encode("utf-8")
+        each_title = each_article.title(withNamespace=True)
         if (each_title not in DISALLOWED_TITLES and
                 not each_article.isRedirectPage()):
             notes = get_notes(each_article)
@@ -185,13 +185,13 @@ def main():
             # We receive proj_shortcuts in list form, so make it a string
             proj_shortcuts = ",".join(proj_shortcuts)
 
-            titles.append((each_title.decode("utf-8"), notes, proj_shortcuts, proj_html))
+            titles.append((each_title, notes, proj_shortcuts, proj_html))
         i += 1
         if i % 100 == 0:
             print_log("{} drafts processed...".format(i))
 
     # Write titles into template
-    with open(TEMPLATE) as template_file:
+    with open(TEMPLATE, "r") as template_file:
         with open(OUTPUT_FILE, "w") as output_file:
             template = Template("\n".join(template_file.readlines()))
             metadata = datetime.datetime.utcnow().strftime("Generated at %H:%M, %d %B %Y (UTC).")
